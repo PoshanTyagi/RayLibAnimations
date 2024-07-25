@@ -3,14 +3,14 @@
 #include <cmath>
 #include <random>
 
-const int SCREEN_WIDTH = 1280;
-const int SCREEN_HEIGHT = 720;
-const float INITIAL_BALL_SPEED = 200.0f;
-const float SPEED_INCREASE = 1.1f;
-const float SIZE_INCREASE = 1.1f;
+constexpr int SCREEN_WIDTH = 1280;
+constexpr int SCREEN_HEIGHT = 720;
+constexpr float INITIAL_BALL_SPEED = 400.0f;
+constexpr float SPEED_INCREASE = 1.05f;
+constexpr float SIZE_INCREASE = 5.0f;
 
 // Rainbow colors array
-Color rainbowColors[] = {
+constexpr Color rainbowColors[] = {
         {255, 0,   0,   255},    // Red
         {255, 51,  0,   255},   // Orange-Red
         {255, 102, 0,   255},  // Dark Orange
@@ -50,12 +50,15 @@ Color rainbowColors[] = {
         {138, 43,  226, 255}  // Purple
 };
 
-const int NUM_COLORS = sizeof(rainbowColors) / sizeof(rainbowColors[0]);
+constexpr int NUM_COLORS = sizeof(rainbowColors) / sizeof(rainbowColors[0]);
 
 int main() {
     SetConfigFlags(FLAG_WINDOW_HIGHDPI | FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT);
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Bouncing Ball Animation");
+    InitAudioDevice();
     SetTargetFPS(60);
+
+    Sound collisionSound = LoadSound("../res/CartoonJump.mp3");
 
     Vector2 circleCenter = {SCREEN_WIDTH / 2.0f, SCREEN_HEIGHT / 2.0f};
     float circleRadius = std::min(SCREEN_WIDTH, SCREEN_HEIGHT) * 0.4f; // Adjust circle size based on screen
@@ -99,7 +102,7 @@ int main() {
 
                 // Increase ball speed and size
                 ballSpeed *= SPEED_INCREASE;
-                ballRadius *= SIZE_INCREASE;
+                ballRadius += SIZE_INCREASE;
 
                 // Normalize and apply new speed
                 float velocityMagnitude = sqrt(ballVelocity.x * ballVelocity.x + ballVelocity.y * ballVelocity.y);
@@ -108,6 +111,8 @@ int main() {
 
                 // Change ball color randomly
                 ballColor = rainbowColors[colorDist(gen)];
+
+                PlaySound(collisionSound);
             }
 
             // Check if animation is complete
@@ -132,6 +137,9 @@ int main() {
 
         EndDrawing();
     }
+
+    UnloadSound(collisionSound);
+    CloseAudioDevice();
 
     CloseWindow();
     return 0;
