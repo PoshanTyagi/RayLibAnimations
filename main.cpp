@@ -8,46 +8,47 @@ constexpr int SCREEN_HEIGHT = 720;
 constexpr float INITIAL_BALL_SPEED = 400.0f;
 constexpr float SPEED_INCREASE = 1.05f;
 constexpr float SIZE_INCREASE = 5.0f;
+constexpr float DELAY = 10.0f;
 
 // Rainbow colors array
 constexpr Color rainbowColors[] = {
-        {255, 0,   0,   255},    // Red
+        {255, 0,   0,   255},   // Red
         {255, 51,  0,   255},   // Orange-Red
-        {255, 102, 0,   255},  // Dark Orange
-        {255, 153, 0,   255},  // Orange
-        {255, 204, 0,   255},  // Amber
-        {255, 255, 0,   255},  // Yellow
-        {204, 255, 0,   255},  // Lime
-        {153, 255, 0,   255},  // Chartreuse
+        {255, 102, 0,   255},   // Dark Orange
+        {255, 153, 0,   255},   // Orange
+        {255, 204, 0,   255},   // Amber
+        {255, 255, 0,   255},   // Yellow
+        {204, 255, 0,   255},   // Lime
+        {153, 255, 0,   255},   // Chartreuse
         {51,  255, 0,   255},   // Harlequin
         {0,   255, 51,  255},   // Mint
-        {0,   255, 153, 255},  // Aquamarine
-        {0,   255, 204, 255},  // Turquoise
-        {0,   255, 255, 255},  // Cyan
-        {0,   204, 255, 255},  // Sky Blue
-        {0,   153, 255, 255},  // Azure
-        {0,   102, 255, 255},  // Cerulean
+        {0,   255, 153, 255},   // Aquamarine
+        {0,   255, 204, 255},   // Turquoise
+        {0,   255, 255, 255},   // Cyan
+        {0,   204, 255, 255},   // Sky Blue
+        {0,   153, 255, 255},   // Azure
+        {0,   102, 255, 255},   // Cerulean
         {0,   51,  255, 255},   // Sapphire
-        {0,   0,   255, 255},    // Blue
+        {0,   0,   255, 255},   // Blue
         {51,  0,   255, 255},   // Indigo
-        {102, 0,   255, 255},  // Violet
-        {153, 0,   255, 255},  // Purple
-        {204, 0,   255, 255},  // Magenta
-        {255, 0,   255, 255},  // Fuchsia
-        {255, 0,   204, 255},  // Deep Pink
-        {255, 0,   153, 255},  // Hot Pink
-        {255, 0,   102, 255},  // Crimson
+        {102, 0,   255, 255},   // Violet
+        {153, 0,   255, 255},   // Purple
+        {204, 0,   255, 255},   // Magenta
+        {255, 0,   255, 255},   // Fuchsia
+        {255, 0,   204, 255},   // Deep Pink
+        {255, 0,   153, 255},   // Hot Pink
+        {255, 0,   102, 255},   // Crimson
         {255, 0,   51,  255},   // Ruby
-        {128, 128, 0,   255},  // Olive
+        {128, 128, 0,   255},   // Olive
         {128, 64,  0,   255},   // Brown
-        {153, 102, 51,  255}, // Tan
-        {245, 222, 179, 255},// Beige
-        {204, 204, 204, 255},// Light Gray
-        {128, 128, 128, 255},// Gray
+        {153, 102, 51,  255},   // Tan
+        {245, 222, 179, 255},   // Beige
+        {204, 204, 204, 255},   // Light Gray
+        {128, 128, 128, 255},   // Gray
         {51,  51,  51,  255},   // Dark Gray
-        {255, 215, 0,   255},  // Gold
-        {192, 192, 192, 255},// Silver
-        {138, 43,  226, 255}  // Purple
+        {255, 215, 0,   255},   // Gold
+        {192, 192, 192, 255},   // Silver
+        {138, 43,  226, 255}    // Purple
 };
 
 constexpr int NUM_COLORS = sizeof(rainbowColors) / sizeof(rainbowColors[0]);
@@ -75,6 +76,16 @@ int main() {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> colorDist(0, NUM_COLORS - 1);
+
+//    // Starting Delay
+//    double startDelay = DELAY;
+//    double startTimer = GetTime();
+//    while (GetTime() - startTimer < startDelay) {
+//        BeginDrawing();
+//        ClearBackground(BLACK);
+//        DrawText("Get Ready!", SCREEN_WIDTH / 2 - MeasureText("Get Ready!", 40) / 2, SCREEN_HEIGHT / 2 - 20, 40, WHITE);
+//        EndDrawing();
+//    }
 
     while (!WindowShouldClose()) {
         if (!animationComplete) {
