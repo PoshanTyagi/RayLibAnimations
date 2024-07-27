@@ -3,12 +3,13 @@
 #include <cmath>
 #include <random>
 
-constexpr int SCREEN_WIDTH = 1280;
-constexpr int SCREEN_HEIGHT = 720;
+constexpr int RENDER_WIDTH = 3600;  // 4K width
+constexpr int RENDER_HEIGHT = 3600; // 4K height
+constexpr int DISPLAY_WIDTH = 800; // Actual display width
+constexpr int DISPLAY_HEIGHT = 800; // Actual display height
 constexpr float INITIAL_BALL_SPEED = 400.0f;
 constexpr float SPEED_INCREASE = 1.05f;
 constexpr float SIZE_INCREASE = 5.0f;
-constexpr float DELAY = 10.0f;
 
 // Rainbow colors array
 constexpr Color rainbowColors[] = {
@@ -54,41 +55,54 @@ constexpr Color rainbowColors[] = {
 constexpr int NUM_COLORS = sizeof(rainbowColors) / sizeof(rainbowColors[0]);
 
 int main() {
-    SetConfigFlags(FLAG_WINDOW_HIGHDPI | FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT);
-    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Bouncing Ball Animation");
+    SetConfigFlags(FLAG_WINDOW_HIGHDPI | FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT | FLAG_WINDOW_MAXIMIZED);
+    InitWindow(DISPLAY_WIDTH, DISPLAY_HEIGHT, "Bouncing Ball Animation");
     InitAudioDevice();
     SetTargetFPS(60);
 
+    // Create render texture to draw the game at 4K resolution
+    RenderTexture2D target = LoadRenderTexture(RENDER_WIDTH, RENDER_HEIGHT);
+
     Sound collisionSound = LoadSound("../res/CartoonJump.mp3");
 
-    Vector2 circleCenter = {SCREEN_WIDTH / 2.0f, SCREEN_HEIGHT / 2.0f};
-    float circleRadius = std::min(SCREEN_WIDTH, SCREEN_HEIGHT) * 0.4f; // Adjust circle size based on screen
-    float borderThickness = circleRadius * 0.04f; // Adjust border thickness relative to circle size
-    float ballRadius = circleRadius * 0.05f; // Initial ball size relative to circle
+    Vector2 circleCenter = {RENDER_WIDTH / 2.0f, RENDER_HEIGHT / 2.0f};
+    float circleRadius = std::min(RENDER_WIDTH, RENDER_HEIGHT) * 0.4f;
+    float borderThickness = circleRadius * 0.04f;
+    float ballRadius = circleRadius * 0.05f;
 
     Vector2 ballPosition = {circleCenter.x, circleCenter.y - circleRadius + ballRadius};
     Vector2 ballVelocity = {INITIAL_BALL_SPEED, INITIAL_BALL_SPEED};
     float ballSpeed = INITIAL_BALL_SPEED;
 
     bool animationComplete = false;
+    bool animationStarted = false;
     auto ballColor = RED;
 
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> colorDist(0, NUM_COLORS - 1);
 
-//    // Starting Delay
-//    double startDelay = DELAY;
-//    double startTimer = GetTime();
-//    while (GetTime() - startTimer < startDelay) {
-//        BeginDrawing();
-//        ClearBackground(BLACK);
-//        DrawText("Get Ready!", SCREEN_WIDTH / 2 - MeasureText("Get Ready!", 40) / 2, SCREEN_HEIGHT / 2 - 20, 40, WHITE);
-//        EndDrawing();
-//    }
+    // Start button
+    Rectangle startButton = {
+            RENDER_WIDTH / 2.0f - 100,
+            RENDER_HEIGHT / 2.0f - 30,
+            200,
+            60
+    };
 
     while (!WindowShouldClose()) {
-        if (!animationComplete) {
+        // Check for start button click
+        if (!animationStarted) {
+            Vector2 mousePos = GetMousePosition();
+            mousePos.x *= (float) RENDER_WIDTH / DISPLAY_WIDTH;
+            mousePos.y *= (float) RENDER_HEIGHT / DISPLAY_HEIGHT;
+
+            if (CheckCollisionPointRec(mousePos, startButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+                animationStarted = true;
+            }
+        }
+
+        if (animationStarted && !animationComplete) {
             // Update ball position
             ballPosition.x += ballVelocity.x * GetFrameTime();
             ballPosition.y += ballVelocity.y * GetFrameTime();
@@ -136,7 +150,7 @@ int main() {
         }
 
         // Drawing
-        BeginDrawing();
+        BeginTextureMode(target);
         ClearBackground(BLACK);
 
         // Draw outer circle (green border only, with increased thickness)
@@ -144,11 +158,33 @@ int main() {
                  GREEN);
 
         // Draw Ball
-        DrawCircleSector(ballPosition, ballRadius, 0, 360, 360, ballColor);
+        if (animationStarted) {
+            DrawCircleSector(ballPosition, ballRadius, 0, 360, 360, ballColor);
+        }
+
+        // Draw start button if animation hasn't started
+        if (!animationStarted) {
+            DrawRectangleRec(startButton, RAYWHITE);
+            DrawText("START", startButton.x + 50, startButton.y + 15, 30, BLACK);
+        }
+
+        EndTextureMode();
+
+        BeginDrawing();
+        ClearBackground(BLACK);
+
+        // Draw the scaled render texture to fit the display
+        DrawTexturePro(target.texture,
+                       Rectangle{0, 0, (float) target.texture.width, (float) -target.texture.height},
+                       Rectangle{0, 0, (float) DISPLAY_WIDTH, (float) DISPLAY_HEIGHT},
+                       Vector2{0, 0}, 0.0f, WHITE);
+
+        DrawFPS(10, 10);
 
         EndDrawing();
     }
 
+    UnloadRenderTexture(target);
     UnloadSound(collisionSound);
     CloseAudioDevice();
 
